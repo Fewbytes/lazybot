@@ -5,7 +5,10 @@
         [clojure.java.io :only [file]]
         [clojure.string :only [join]]
         [compojure.core :only [routes]]
-        [hiccup.page :only [html5]])
+        [hiccup.element :only [link-to]]
+        [hiccup.util :only [url-encode]] 
+        [hiccup.page :only [html5]
+         ])
   (:require [compojure.core :refer [GET]]
             [clj-http.util])
   (:import [java.io File]))
@@ -74,9 +77,9 @@
 (defn link
   "Link to a logger URI."
   [name & parts]
-  (let [uri (join "/" (cons "/logger"
-                            (map clj-http.util/url-encode parts)))]
-    [:a {:href uri} name]))
+  (let [uri (join "/" (cons "/logger" (map url-encode parts)))] 
+    (link-to uri name)
+  ))
 
 (def error-404
   {:status 404

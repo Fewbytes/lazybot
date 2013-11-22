@@ -4,6 +4,7 @@
         [somnium.congomongo :only [mongo!]]
         [clojure.set :only [intersection]]
         [compojure.core :only [routes]]
+        [hiccup.middleware :only [wrap-base-url]]
         [ring.middleware.params :only [wrap-params]]
         [ring.adapter.jetty :only [run-jetty]])
   (:import [java.io File FileReader]))
@@ -85,7 +86,10 @@
 (def sroutes nil)
 
 (defn route [rs]
-  (alter-var-root #'lazybot.core/sroutes (constantly (wrap-params (apply routes rs)))))
+  (alter-var-root #'lazybot.core/sroutes (constantly (-> (apply routes rs)
+                                                       (wrap-base-url (get (read-config) :base-url))
+                                                       wrap-params)
+                                           )))
 
 (defn start-server [port]
   (defonce server (run-jetty #'lazybot.core/sroutes
