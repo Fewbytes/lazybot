@@ -6,6 +6,10 @@
         [clojure.string :only [join]]
         [somnium.congomongo :only [fetch fetch-one insert! destroy!]]))
 
+(defn list-commands [modules]
+  (mapcat :triggers
+    (mapcat :commands (vals modules))))
+
 (defplugin
   (:cmd
    "Adds a topic to the help DB. You may have to be an admin to do this."
@@ -55,11 +59,16 @@
          (let [topic (first args)
                content (fetch-one :help :where {:topic topic})]
            (cond
-            (not topic) (send-message com-m "You're going to need to tell me what you want help with.")
+            (not topic) (send-message com-m "You're going to need to tell me what you want help with. Try @commands if you want a list of commands.")
             content (send-message com-m (prefix nick (:content content)))
             :else (send-message com-m (str "Topic: \"" topic "\" doesn't exist!"))))
          (send-message com-m (prefix  nick help-msg))))))
   
+  (:cmd
+    "List known commands."
+    #{"commands"}
+    (fn [{:keys [bot] :as com-m}]
+      (send-message com-m (join " " (list-commands (:modules @bot))))))
   (:cmd
    "Lists the available help topics in the DB."
    #{"list"}
