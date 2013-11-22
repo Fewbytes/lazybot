@@ -11,7 +11,7 @@
               ["--background"
                "Start lazybot in the background. Should only be used along with --logpath."])
              (optional ["--logpath" "A file for lazybot to direct output to."])
-             (optional ["--config-dir" "Directory to look for config.clj and other configuraiton."]))]
+             (optional ["--config-dir" "Directory to look for config.clj and other configuration."]))]
     (when config-dir
       (alter-var-root #'*lazybot-dir* (constantly (file config-dir))))
     (if background
