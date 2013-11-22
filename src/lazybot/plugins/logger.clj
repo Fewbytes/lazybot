@@ -4,11 +4,11 @@
         [clj-time.format :only [unparse formatters]]
         [clojure.java.io :only [file]]
         [clojure.string :only [join]]
-        [compojure.core :only [routes]]
+        [compojure.core :only [context]]
+        [compojure.route :only [not-found]]
         [hiccup.element :only [link-to]]
         [hiccup.util :only [url-encode]] 
-        [hiccup.page :only [html5]
-         ])
+        [hiccup.page :only [html5]])
   (:require [compojure.core :refer [GET]]
             [clj-http.util])
   (:import [java.io File]))
@@ -81,11 +81,6 @@
     (link-to uri name)
   ))
 
-(def error-404
-  {:status 404
-   :headers {}
-   :body "These are not the logs you're looking for."})
-
 (defn layout
   "Takes a hiccup document, wraps it with the layout, and renders the resulting
   HTML to a string. Passes through hashmaps directly."
@@ -140,23 +135,23 @@
 (def pathreg #"[^\/]+")
 
 (defplugin
-  (:routes (routes
-             (GET "/logger" req (index req))
-             (GET ["/logger/:server" :server pathreg] [server]
+  (:routes (context "/logger" []
+              (GET "/" req (index req))
+              (GET ["/:server" :server pathreg] [server]
                   (layout server (server-index server)))
-             (GET ["/logger/:server/:channel"
+              (GET ["/:server/:channel"
                    :server pathreg
                    :channel pathreg]
                   [server channel]
                   (layout (str server channel)
                           (channel-index server channel)))
-             (GET ["/logger/:server/:channel/:file"
+              (GET ["/:server/:channel/:file"
                    :server pathreg
                    :channel pathreg
                    :file pathreg]
                   [server channel file]
                   (file-index server channel file))
-             (constantly error-404)))
+              (not-found "These are not the logs you're looking for.")))
   (:hook :on-message #'log-message)
   (:hook
    :on-send-message
